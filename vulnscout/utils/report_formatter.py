@@ -1,0 +1,151 @@
+from __future__ import annotations
+
+import json
+from datetime import datetime
+
+from vulnscout.models.schemas import Scan, Vulnerability
+
+
+def format_report(scan: Scan, vulns: list[Vulnerability], fmt: str = "json") -> tuple[str, str]:
+    """Format scan results into requested format.
+    Returns (content, media_type).
+    """
+    if fmt == "json":
+        return _format_json(scan, vulns), "application/json"
+    elif fmt == "sarif":
+        return _format_sarif(scan, vulns), "application/json"
+    elif fmt == "markdown":
+        return _format_markdown(scan, vulns), "text/markdown"
+    else:
+        return _format_json(scan, vulns), "application/json"
+
+
+def _format_json(scan: Scan, vulns: list[Vulnerability]) -> str:
+    data = {
+        "scan_id": scan.id,
+        "language": scan.language,
+        "source_path": scan.source_path,
+        "created_at": scan.created_at.isoformat() if scan.created_at else None,
+        "summary": {
+            "total_files": scan.total_files,
+            "scanned_files": scan.scanned_files,
+            "critical": scan.vuln_count_critical,
+            "high": scan.vuln_count_high,
+            "medium": scan.vuln_count_medium,
+            "low": scan.vuln_count_low,
+        },
+        "vulnerabilities": [
+            {
+                "id": v.id,
+                "file_path": v.file_path,
+                "line_start": v.line_start,
+                "line_end": v.line_end,
+                "cwe_id": v.cwe_id,
+                "severity": v.severity,
+                "title": v.title,
+                "description": v.description,
+            }
+            for v in vulns
+        ],
+    }
+    return json.dumps(data, indent=2, ensure_ascii=False)
+
+
+def _format_sarif(scan: Scan, vulns: list[Vulnerability]) -> str:
+    """Format as SARIF 2.1.0 (compatible with GitHub CodeQL)."""
+    results = []
+    for v in vulns:
+        result = {
+            "ruleId": v.cwe_id or "unknown",
+            "level": _sarif_level(v.severity),
+            "message": {"text": v.title or "Vulnerability found"},
+            "locations": [
+                {
+                    "physicalLocation": {
+                        "artifactLocation": {"uri": v.file_path},
+                        "region": {
+                            "startLine": v.line_start or 1,
+                            "endLine": v.line_end or v.line_start or 1,
+                        },
+                    }
+                }
+            ],
+        }
+        if v.description:
+            result["message"]["text"] = f"{v.title}: {v.description}"
+        results.append(result)
+
+    sarif = {
+        "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+        "version": "2.1.0",
+        "runs": [
+            {
+                "tool": {
+                    "driver": {
+                        "name": "VulnScout",
+                        "version": "0.1.0",
+                        "informationUri": "https://github.com/vulnscout/vulnscout",
+                    }
+                },
+                "results": results,
+            }
+        ],
+    }
+    return json.dumps(sarif, indent=2)
+
+
+def _sarif_level(severity: str) -> str:
+    mapping = {
+        "critical": "error",
+        "high": "error",
+        "medium": "warning",
+        "low": "note",
+    }
+    return mapping.get(severity, "warning")
+
+
+def _format_markdown(scan: Scan, vulns: list[Vulnerability]) -> str:
+    lines = [
+        f"# VulnScout Scan Report",
+        f"",
+        f"**Scan ID:** {scan.id}",
+        f"**Source:** {scan.source_path}",
+        f"**Language:** {scan.language or 'auto'}",
+        f"**Date:** {scan.created_at.strftime('%Y-%m-%d %H:%M:%S') if scan.created_at else 'N/A'}",
+        f"",
+        f"## Summary",
+        f"",
+        f"| Severity | Count |",
+        f"|----------|-------|",
+        f"| Critical | {scan.vuln_count_critical} |",
+        f"| High     | {scan.vuln_count_high} |",
+        f"| Medium   | {scan.vuln_count_medium} |",
+        f"| Low      | {scan.vuln_count_low} |",
+        f"",
+        f"**Files:** {scan.scanned_files}/{scan.total_files} scanned",
+        f"",
+        f"## Vulnerabilities",
+        f"",
+    ]
+
+    for i, v in enumerate(vulns, 1):
+        lines.append(f"### {i}. [{v.severity.upper()}] {v.title}")
+        lines.append(f"")
+        lines.append(f"- **File:** `{v.file_path}`")
+        if v.line_start:
+            lines.append(f"- **Line:** {v.line_start}-{v.line_end or v.line_start}")
+        if v.cwe_id:
+            lines.append(f"- **CWE:** {v.cwe_id}")
+        if v.description:
+            lines.append(f"- **Description:** {v.description}")
+        lines.append(f"")
+        if v.vulnerable_code:
+            lines.append(f"```")
+            lines.append(v.vulnerable_code[:500])
+            lines.append(f"```")
+            lines.append(f"")
+
+    lines.append("---")
+    lines.append(f"*Generated by VulnScout v0.1.0*")
+
+    return "\n".join(lines)
