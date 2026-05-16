@@ -13,7 +13,7 @@ class ModelBackend(str, Enum):
 
 
 class Settings(BaseSettings):
-    model_class: str = "deepseek-coder-1.3b-instruct"
+    model_name: str = "deepseek-coder-1.3b-instruct"
     model_backend: ModelBackend = ModelBackend.LLAMA_CPP
     openai_base_url: str = "http://localhost:8000/v1"
     openai_api_key: str = "not-needed"
@@ -21,7 +21,7 @@ class Settings(BaseSettings):
     database_url: str = "sqlite:///vulnscout.db"
     model_cache_dir: str = str(Path.home() / ".vulnscout" / "models")
 
-    celrey_broker_url: str = "redis://localhost:6379/0"
+    celery_broker_url: str = "redis://localhost:6379/0"
     celery_result_backend: str = "redis://localhost:6379/0"
 
     max_file_size: int = 1024 * 1024  # 1MB
@@ -33,7 +33,7 @@ class Settings(BaseSettings):
 
     @property
     def model_path(self) -> Path:
-        return Path(self.model_cache_dir) / self.model_class
+        return Path(self.model_cache_dir) / self.model_name
 
     class Config:
         env_file = ".env"

@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import gettext
-import os
 from pathlib import Path
 
 from vulnscout.core.config import settings
