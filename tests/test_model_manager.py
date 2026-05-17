@@ -5,7 +5,6 @@ from vulnscout.core.model_manager import ModelManager
 
 def test_model_manager_init():
     mm = ModelManager()
-    assert mm.cache_dir.exists()
     assert isinstance(mm.list_available_models(), list)
     assert len(mm.list_available_models()) > 0
 

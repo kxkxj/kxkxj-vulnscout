@@ -16,8 +16,8 @@ def test_hardware_info_defaults():
     assert info.has_gpu is False
     assert info.gpu_count == 0
     assert info.total_vram_mb == 0
-    assert info.recommended_model == "deepseek-coder-1.3b-instruct-q4_k_m.gguf"
-    assert info.recommended_backend == "llama.cpp"
+    assert info.recommended_model == "deepseek-coder:1.3b"
+    assert info.recommended_backend == "ollama"
 
 
 def test_hardware_info_vram_selection():

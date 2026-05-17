@@ -300,13 +300,18 @@ def doctor():
 
     click.echo("")
     mm = ModelManager()
-    downloaded = mm.list_downloaded_models()
-    if downloaded:
-        click.echo("Downloaded models:")
-        for m in downloaded:
-            click.echo(f"  [x] {m}")
-    else:
-        click.echo("No models downloaded. Run `vulnscout model download`.")
+    click.echo("Ollama:")
+    click.echo(f"  Installed: {'Yes' if mm.is_ollama_installed() else 'No'}")
+    if mm.is_ollama_installed():
+        click.echo(f"  Running: {'Yes' if mm.is_ollama_running() else 'No'}")
+        if mm.is_ollama_running():
+            pulled = mm.list_downloaded_models()
+            if pulled:
+                click.echo("  Models pulled:")
+                for m in pulled:
+                    click.echo(f"    [x] {m}")
+            else:
+                click.echo("  No models pulled. Run `vulnscout model download`.")
 
     click.echo("")
     deps = [
@@ -344,7 +349,7 @@ def model_list():
         click.echo(f"  [{status}] {m['name']} ({m['size_gb']}GB)")
 
     click.echo("")
-    click.echo("Download a model: vulnscout model download <model-name>")
+    click.echo("Pull a model: vulnscout model download <model-name>")
 
 
 @model.command("download")
@@ -359,10 +364,10 @@ def model_download(model_name, mirror):
         click.echo(f"Model already downloaded: {model_name}")
         return
 
-    click.echo(f"Downloading {model_name}...")
+    click.echo(f"Pulling {model_name} via Ollama...")
     try:
-        path = mm.download_model(model_name, use_mirror=mirror)
-        click.echo(f"Downloaded to: {path}")
+        tag = mm.download_model(model_name, use_mirror=mirror)
+        click.echo(f"Model ready: {tag}")
     except Exception as e:
         click.echo(f"Download failed: {e}", err=True)
         sys.exit(1)

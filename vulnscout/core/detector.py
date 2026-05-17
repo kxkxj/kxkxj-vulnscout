@@ -12,32 +12,33 @@ class HardwareInfo:
     gpu_count: int = 0
     total_vram_mb: int = 0
     gpu_name: str = ""
+    has_ollama: bool = False
     has_llama_cpp: bool = False
     has_vllm: bool = False
     warnings: list[str] = field(default_factory=list)
 
     @property
     def recommended_model(self) -> str:
-        """Auto-select model based on available VRAM."""
+        """Auto-select Ollama model tag based on available VRAM."""
         if not self.has_gpu:
-            return "deepseek-coder-1.3b-instruct-q4_k_m.gguf"
+            return "deepseek-coder:1.3b"
         vram = self.total_vram_mb
         if vram >= 24000:
-            return "deepseek-coder-6.7b-instruct-q4_k_m.gguf"
-        elif vram >= 12000:
-            return "deepseek-coder-1.3b-instruct-q4_k_m.gguf"
+            return "deepseek-coder:6.7b"
         elif vram >= 8000:
-            return "deepseek-coder-1.3b-instruct-q4_k_m.gguf"
+            return "deepseek-coder:1.3b"
         else:
-            return "deepseek-coder-1.3b-instruct-q4_k_m.gguf"
+            return "deepseek-coder:1.3b"
 
     @property
     def recommended_backend(self) -> str:
-        if self.has_vllm and self.has_gpu:
+        if self.has_ollama:
+            return "ollama"
+        elif self.has_vllm and self.has_gpu:
             return "vllm"
         elif self.has_llama_cpp:
             return "llama.cpp"
-        return "llama.cpp"
+        return "ollama"
 
 
 def detect_hardware() -> HardwareInfo:
@@ -70,7 +71,10 @@ def detect_hardware() -> HardwareInfo:
         except (subprocess.TimeoutExpired, FileNotFoundError, ValueError):
             pass
 
-    # ── Python package detection ───────────────────────────────────
+    # ── Ollama detection ───────────────────────────────────────────
+    info.has_ollama = shutil.which("ollama") is not None
+
+    # ── Other backend detection ────────────────────────────────────
     if shutil.which("llama-cpp-server") or _import_check("llama_cpp"):
         info.has_llama_cpp = True
     if _import_check("vllm"):
@@ -79,12 +83,14 @@ def detect_hardware() -> HardwareInfo:
     # ── Warnings ───────────────────────────────────────────────────
     if not info.has_gpu:
         info.warnings.append(
-            "No NVIDIA GPU detected. Using CPU mode (llama.cpp). "
+            "No NVIDIA GPU detected. Using CPU mode (Ollama). "
             "Expect slower analysis. For best performance, use a GPU with 8GB+ VRAM."
         )
-    if not info.has_llama_cpp and not info.has_vllm:
+    if not info.has_ollama:
         info.warnings.append(
-            "No inference backend found. Run `vulnscout doctor` for setup instructions."
+            "Ollama not found. Install it first:\n"
+            "  curl -fsSL https://ollama.com/install.sh | sh\n"
+            "Then pull a model: ollama pull deepseek-coder:1.3b"
         )
 
     return info
