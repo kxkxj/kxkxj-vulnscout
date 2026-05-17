@@ -27,8 +27,8 @@ services:
 
   ollama:
     image: ollama/ollama:latest
-    ports:
-      - "11434:11434"
+    # No host port mapping (avoids conflict with local Ollama on :11434)
+    # Containers access it via internal DNS: http://ollama:11434
     volumes:
       - ollama_data:/root/.ollama
 
