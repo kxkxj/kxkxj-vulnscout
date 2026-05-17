@@ -3,8 +3,9 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/)
 
-VulnScout scans source code for security vulnerabilities using locally deployed 
-DeepSeek-Coder AI models. Supports Web UI and CLI, with automatic GPU adaptation.
+VulnScout scans source code for security vulnerabilities using locally deployed
+DeepSeek-Coder AI models via [Ollama](https://ollama.com). Supports Web UI and CLI,
+with automatic GPU adaptation.
 
 ## Features
 
@@ -21,26 +22,35 @@ DeepSeek-Coder AI models. Supports Web UI and CLI, with automatic GPU adaptation
 ### Prerequisites
 
 - Python 3.11+
+- [Ollama](https://ollama.com) — handles model serving and GPU acceleration
 - (Optional) NVIDIA GPU with 8GB+ VRAM for GPU mode
-- (Optional) llama.cpp for CPU mode
 
-### Install from source
+### 1. Install Ollama
+
+```bash
+curl -fsSL https://ollama.com/install.sh | sh
+```
+
+### 2. Install VulnScout
 
 ```bash
 # Clone the repository
 git clone <your-repo-url>
 cd vulnscout
-pip install .
+pip install -e ".[dev]"
 ```
 
-### Install for development
+### 3. Pull the AI model
 
 ```bash
-pip install -e ".[dev]"
-pytest
+# Auto-downloads the recommended model for your GPU
+vulnscout model download
+
+# Or pull manually (equivalent)
+ollama pull deepseek-coder:1.3b
 ```
 
-### Run a Scan
+### 4. Run a scan
 
 ```bash
 # Scan a local directory
@@ -53,20 +63,17 @@ vulnscout scan https://github.com/user/repo
 vulnscout scan ./my-project --format sarif --output report.sarif
 ```
 
-### Start the Web UI
+### Optional: Start the Web UI
 
 ```bash
-# Download an AI model first
-vulnscout model download
-
-# Start the API server
+# Start the API server (Ollama must be running)
 uvicorn vulnscout.main:app --host 0.0.0.0 --port 8000
 
-# Open frontend (separate terminal)
+# Start frontend (separate terminal)
 cd frontend && npm install && npm run dev
 ```
 
-Or use Docker Compose:
+Or with Docker Compose:
 
 ```bash
 docker compose up -d
@@ -79,26 +86,35 @@ docker compose up -d
 vulnscout scan <path>              Scan a local path, GitHub URL, or ZIP file
 vulnscout scan <path> --format json|sarif|markdown
 vulnscout scan <path> --auto-fix   Auto-generate fix patches
-vulnscout doctor                   Diagnose environment
+vulnscout doctor                   Diagnose environment (GPU, Ollama, dependencies)
 vulnscout model list               List available AI models
-vulnscout model download <name>    Download an AI model
+vulnscout model download <name>    Pull an AI model via Ollama
 vulnscout config init              Create configuration file
 vulnscout patch apply <vuln-id>    Apply a fix patch
 vulnscout patch apply-all <scan>   Apply all patches for a scan
 ```
 
+## How It Works
+
+1. **Code acquisition**: Local directory, GitHub clone, or ZIP upload
+2. **Language detection**: Auto-detects Python/JS/TS/Java/C/C++
+3. **AST chunking**: Splits code into function-level units via tree-sitter
+4. **Three-tier analysis**:
+   - Tier 1: Regex rules for known dangerous patterns (eval, strcpy, hardcoded secrets)
+   - Tier 2: Zero-shot AI query to DeepSeek-Coder for general vulnerabilities
+   - Tier 3: Few-shot examples (SQLi, XSS) for precise detection
+5. **Fix generation**: AI generates unified diff patches
+6. **Reporting**: JSON, SARIF 2.1.0 (CodeQL compatible), or Markdown
+
 ## Architecture
 
-See [docs/architecture.md](docs/architecture.md) for detailed architecture documentation.
+See [docs/architecture.md](docs/architecture.md) for detailed design documentation.
 
-## Publishing to PyPI (Future)
-
-Once the project is mature, publish with:
+## Development
 
 ```bash
-pip install build
-python -m build
-twine upload dist/*
+pip install -e ".[dev]"
+pytest          # 44+ tests
 ```
 
 ## License
