@@ -39,7 +39,7 @@ curl -fsSL https://ollama.com/install.sh | sh
 
 ```bash
 # Clone the repository
-git clone <your-repo-url>
+git clone https://github.com/yujh129/vulnscout.git
 cd vulnscout
 
 # Install Python backend

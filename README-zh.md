@@ -37,7 +37,7 @@ curl -fsSL https://ollama.com/install.sh | sh
 
 ```bash
 # 克隆仓库
-git clone <your-repo-url>
+git clone https://github.com/yujh129/vulnscout.git
 cd vulnscout
 
 # 安装 Python 后端

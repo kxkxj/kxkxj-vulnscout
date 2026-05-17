@@ -84,7 +84,7 @@ def _format_sarif(scan: Scan, vulns: list[Vulnerability]) -> str:
                     "driver": {
                         "name": "VulnScout",
                         "version": "0.1.0",
-                        "informationUri": "https://github.com/<your-org>/vulnscout",
+                        "informationUri": "https://github.com/yujh129/vulnscout",
                     }
                 },
                 "results": results,

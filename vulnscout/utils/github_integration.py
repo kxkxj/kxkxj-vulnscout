@@ -31,7 +31,7 @@ def _headers() -> dict:
     if not token:
         raise GitHubError(
             "GitHub token not configured. Set GITHUB_TOKEN in .env "
-            "or run: vulnscout config set GITHUB_TOKEN <your-token>"
+            "or run: vulnscout config set GITHUB_TOKEN <token>"
         )
     return {
         "Authorization": f"Bearer {token}",
