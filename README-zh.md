@@ -81,11 +81,19 @@ uvicorn vulnscout.main:app --host 0.0.0.0 --port 8000
 
 > 编译好的前端（`frontend/dist/`）由 FastAPI 自动托管，无需额外启动前端服务。
 
-或使用 Docker Compose 一键启动：
+### Docker 部署（备用方案）
 
 ```bash
+# 一键启动所有服务（API + 前端 + Redis）
 docker compose up -d
-# 打开 http://localhost:3000
+
+# 在容器内拉取 AI 模型
+docker compose exec api vulnscout model download
+
+# 运行扫描
+docker compose exec api vulnscout scan /data
+
+# 浏览器打开 http://localhost:3000
 ```
 
 ## CLI 命令参考

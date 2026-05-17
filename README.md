@@ -84,10 +84,18 @@ uvicorn vulnscout.main:app --host 0.0.0.0 --port 8000
 > The built frontend (`frontend/dist/`) is served automatically by FastAPI.
 > No separate frontend dev server needed for production use.
 
-Or with Docker Compose:
+### Docker (alternative)
 
 ```bash
+# Build and start all services (API + frontend + Redis)
 docker compose up -d
+
+# Pull the AI model inside the container
+docker compose exec api vulnscout model download
+
+# Run a scan
+docker compose exec api vulnscout scan /data
+
 # Open http://localhost:3000
 ```
 
