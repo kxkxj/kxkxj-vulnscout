@@ -7,12 +7,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     git \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Python deps
-COPY pyproject.toml .
-RUN pip install --no-cache-dir .
-
-# Copy app
+# Copy project source
+COPY pyproject.toml README.md ./
 COPY vulnscout/ vulnscout/
+
+# Install Python package
+RUN pip install --no-cache-dir .
 
 # Expose API
 EXPOSE 8000
