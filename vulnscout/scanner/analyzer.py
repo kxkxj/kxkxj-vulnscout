@@ -4,6 +4,9 @@ import json
 import re
 from typing import Any
 
+import httpx
+from openai import OpenAI
+
 from openai import OpenAI
 
 from vulnscout.core.config import settings
@@ -228,12 +231,19 @@ class Analyzer:
     """Three-tier vulnerability analyzer."""
 
     def __init__(self):
-        self.client = OpenAI(
-            base_url=settings.openai_base_url,
-            api_key=settings.openai_api_key,
-            timeout=10.0,
-            max_retries=0,
-        )
+        self._model_available: bool | None = None
+
+    def _check_model(self) -> bool:
+        """Quick-check if model API is reachable (no timeout hang)."""
+        if self._model_available is not None:
+            return self._model_available
+        try:
+            import httpx
+            r = httpx.get(f"{settings.openai_base_url}/../api/tags", timeout=2.0)
+            self._model_available = r.status_code == 200
+        except Exception:
+            self._model_available = False
+        return self._model_available
 
     def analyze(
         self,
@@ -249,7 +259,16 @@ class Analyzer:
         rule_findings = _rule_check(file_path, code, language)
 
         # Tier 2 & 3: Model-based analysis
-        model_findings = self._model_analyze(code, language, model)
+        model_findings = []
+        if self._check_model():
+            if not hasattr(self, 'client'):
+                self.client = OpenAI(
+                    base_url=settings.openai_base_url,
+                    api_key=settings.openai_api_key,
+                    timeout=10.0,
+                    max_retries=0,
+                )
+            model_findings = self._model_analyze(code, language, model)
 
         # Merge: rule takes priority for pattern-based, model for everything else
         seen_titles = {f["title"] for f in rule_findings}
@@ -323,7 +342,18 @@ class Analyzer:
         model: str | None = None,
     ) -> str | None:
         """Generate a fix patch for a vulnerability."""
+        if not self._check_model():
+            return None
+
         model = model or settings.model_name
+
+        if not hasattr(self, 'client'):
+            self.client = OpenAI(
+                base_url=settings.openai_base_url,
+                api_key=settings.openai_api_key,
+                timeout=10.0,
+                max_retries=0,
+            )
 
         try:
             response = self.client.chat.completions.create(
