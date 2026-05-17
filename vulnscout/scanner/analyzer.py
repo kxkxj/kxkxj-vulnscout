@@ -231,6 +231,8 @@ class Analyzer:
         self.client = OpenAI(
             base_url=settings.openai_base_url,
             api_key=settings.openai_api_key,
+            timeout=10.0,
+            max_retries=0,
         )
 
     def analyze(

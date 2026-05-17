@@ -79,7 +79,7 @@ class ScanPipeline:
                 continue
 
             # Chunk the file
-            chunks = chunk_file(rel_path, lang)
+            chunks = chunk_file(str(full_path), lang)
 
             file_vulns = []
             for chunk in chunks:

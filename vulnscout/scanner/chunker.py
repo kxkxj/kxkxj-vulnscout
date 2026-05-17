@@ -42,8 +42,7 @@ class Chunk:
 
 def chunk_file(file_path: str, language: str) -> list[Chunk]:
     """Chunk a file into atomic analysis units (functions/methods)."""
-    root_path = settings.get("scan_root", ".")
-    full_path = Path(root_path) / file_path
+    full_path = Path(file_path)
 
     if not full_path.exists():
         return []
