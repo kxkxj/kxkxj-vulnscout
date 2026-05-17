@@ -83,8 +83,10 @@ uvicorn vulnscout.main:app --host 0.0.0.0 --port 8000
 
 ### Docker 部署（备用方案）
 
+确保已安装 [Docker](https://docs.docker.com/engine/install/)：
+
 ```bash
-# 一键启动所有服务（API + 前端 + Redis）
+# 构建并启动所有服务
 docker compose up -d
 
 # 在容器内拉取 AI 模型
