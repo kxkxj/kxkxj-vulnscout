@@ -215,9 +215,9 @@ def _build_fix_prompt(code: str, vulnerability: dict, language: str) -> str:
     """Build a prompt for generating a fix."""
     return (
         f"Generate a secure fix for the following vulnerability in {language} code.\n\n"
-        f"Vulnerability: {vulnerability['title']} ({vulnerability['cwe_id']})\n"
-        f"Description: {vulnerability['description']}\n"
-        f"Lines {vulnerability['line_start']}-{vulnerability['line_end']}\n\n"
+        f"Vulnerability: {vulnerability.get('title', 'Unknown')} ({vulnerability.get('cwe_id', 'N/A')})\n"
+        f"Description: {vulnerability.get('description', '')}\n"
+        f"Lines {vulnerability.get('line_start', '?')}-{vulnerability.get('line_end', '?')}\n\n"
         f"```{language}\n{code}\n```\n\n"
         f"Return ONLY the fixed code wrapped in ``` fences. Replace ONLY the vulnerable "
         f"lines. Keep the rest of the code identical."
@@ -255,6 +255,16 @@ class Analyzer:
         seen_titles = {f["title"] for f in rule_findings}
         merged = list(rule_findings)
         for mf in model_findings:
+            # Validate required fields; skip malformed findings
+            if not isinstance(mf, dict) or "title" not in mf:
+                continue
+            # Normalize numeric fields (model may return strings)
+            for int_field in ("line_start", "line_end", "confidence"):
+                if int_field in mf:
+                    try:
+                        mf[int_field] = int(mf[int_field])
+                    except (TypeError, ValueError):
+                        mf[int_field] = 0
             if mf["title"] not in seen_titles:
                 mf["file_path"] = file_path
                 merged.append(mf)
@@ -284,11 +294,24 @@ class Analyzer:
                 messages=messages,
                 temperature=0.1,
                 max_tokens=2048,
-                response_format={"type": "json_object"},
             )
             content = response.choices[0].message.content
+            if not content:
+                return []
             result = json.loads(content)
-            return result.get("vulnerabilities", [])
+            vulns = result.get("vulnerabilities", [])
+            # Ensure each vuln has required fields
+            for v in vulns:
+                v.setdefault("title", "Unknown Vulnerability")
+                v.setdefault("severity", "medium")
+                v.setdefault("cwe_id", "unknown")
+                v.setdefault("description", "")
+                v.setdefault("line_start", 1)
+                v.setdefault("line_end", 1)
+                v.setdefault("confidence", 50)
+            return vulns
+        except json.JSONDecodeError:
+            return []
         except Exception:
             return []
 

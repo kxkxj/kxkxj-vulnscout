@@ -120,7 +120,9 @@ def scan(path, output_format, output, auto_fix, lang, severity):
         try:
             pipeline.run(scan, source_dir)
         except Exception as e:
+            import traceback
             click.echo(f"\nError during scan: {e}", err=True)
+            traceback.print_exc()
             scan.status = ScanStatus.FAILED
             db.commit()
             sys.exit(1)
