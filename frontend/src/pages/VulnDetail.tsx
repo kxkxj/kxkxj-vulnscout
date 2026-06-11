@@ -9,9 +9,9 @@ import {
   Button,
   Stack,
 } from '@mui/material';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { fetchVulnerability, fetchPatches } from '../api/scans';
+import { fetchVulnerability, fetchPatches, applyPatch, rejectPatch } from '../api/scans';
 import SeverityBadge from '../components/SeverityBadge';
 import DiffViewer from '../components/DiffViewer';
 
@@ -19,6 +19,7 @@ const VulnDetail: React.FC = () => {
   const { scanId, vulnId } = useParams<{ scanId: string; vulnId: string }>();
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const queryClient = useQueryClient();
 
   const { data: vuln } = useQuery({
     queryKey: ['vuln', vulnId],
@@ -30,6 +31,20 @@ const VulnDetail: React.FC = () => {
     queryKey: ['patches', vulnId],
     queryFn: () => fetchPatches(scanId!, vulnId!),
     enabled: !!scanId && !!vulnId,
+  });
+
+  const applyMutation = useMutation({
+    mutationFn: (patchId: string) => applyPatch(patchId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['patches', vulnId] });
+    },
+  });
+
+  const rejectMutation = useMutation({
+    mutationFn: (patchId: string) => rejectPatch(patchId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['patches', vulnId] });
+    },
   });
 
   if (!vuln) return <Typography>{t('common.loading')}</Typography>;
@@ -93,19 +108,51 @@ const VulnDetail: React.FC = () => {
             <Typography variant="h6" fontWeight={600} sx={{ mb: 2 }}>
               {t('vuln.fix')}
             </Typography>
-            {patches.map((patch) => (
-              <Box key={patch.id}>
-                <DiffViewer diff={patch.diff_content || ''} />
-                <Box sx={{ mt: 2, display: 'flex', gap: 1 }}>
-                  <Button variant="contained" size="small">
-                    {t('vuln.apply')}
-                  </Button>
-                  <Button variant="outlined" size="small" color="error">
-                    {t('vuln.reject')}
-                  </Button>
+            {patches.map((patch) => {
+              const isApplied = patch.status === 'applied';
+              const isRejected = patch.status === 'rejected';
+              const isDraft = patch.status === 'draft';
+
+              return (
+                <Box key={patch.id} sx={{ mb: 3 }}>
+                  <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
+                    <Chip
+                      label={isApplied ? t('vuln.applied') : isRejected ? t('vuln.rejected') : 'draft'}
+                      size="small"
+                      color={isApplied ? 'success' : isRejected ? 'error' : 'default'}
+                      variant={isDraft ? 'outlined' : 'filled'}
+                    />
+                    {patch.description && (
+                      <Typography variant="caption" color="text.secondary">
+                        {patch.description}
+                      </Typography>
+                    )}
+                  </Stack>
+
+                  <DiffViewer diff={patch.diff_content || ''} />
+
+                  <Box sx={{ mt: 2, display: 'flex', gap: 1 }}>
+                    <Button
+                      variant="contained"
+                      size="small"
+                      onClick={() => applyMutation.mutate(patch.id)}
+                      disabled={!isDraft || applyMutation.isPending}
+                    >
+                      {isApplied ? t('vuln.applied') : t('vuln.apply')}
+                    </Button>
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      color="error"
+                      onClick={() => rejectMutation.mutate(patch.id)}
+                      disabled={!isDraft || rejectMutation.isPending}
+                    >
+                      {isRejected ? t('vuln.rejected') : t('vuln.reject')}
+                    </Button>
+                  </Box>
                 </Box>
-              </Box>
-            ))}
+              );
+            })}
           </CardContent>
         </Card>
       )}

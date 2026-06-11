@@ -1,5 +1,5 @@
 import api from './client';
-import type { Scan, Vulnerability, Patch } from '../types';
+import type { Scan, Vulnerability, Patch, PRResult } from '../types';
 
 export const fetchScans = async (): Promise<Scan[]> => {
   const { data } = await api.get('/scans');
@@ -51,4 +51,26 @@ export const createScanFromZip = async (file: File): Promise<Scan> => {
   formData.append('file', file);
   const { data } = await api.post('/scans?source_type=local', formData);
   return data;
+};
+
+export const createPullRequest = async (
+  scanId: string,
+  repo?: string,
+  branch?: string,
+  base?: string,
+): Promise<PRResult> => {
+  const { data } = await api.post(`/scans/${scanId}/pr`, {
+    repo: repo || undefined,
+    branch: branch || 'vulnscout-fix',
+    base: base || 'main',
+  });
+  return data;
+};
+
+export const applyPatch = async (patchId: string): Promise<void> => {
+  await api.post(`/patches/${patchId}/apply`);
+};
+
+export const rejectPatch = async (patchId: string): Promise<void> => {
+  await api.post(`/patches/${patchId}/reject`);
 };

@@ -27,7 +27,18 @@
     "failed": "Scan Failed",
     "progress": "Scanning {{file}} ({{percent}}%)",
     "finding": "Found vulnerabilities in {{file}}",
-    "results": "Scan Results"
+    "results": "Scan Results",
+    "fixSummary": "Fix Suggestions",
+    "totalFixes": "{{count}} vulnerabilities across {{files}} files",
+    "createPR": "Create Pull Request",
+    "prDialogTitle": "Create Pull Request",
+    "branchName": "Branch Name",
+    "baseBranch": "Base Branch",
+    "confirmCreate": "Create",
+    "cancel": "Cancel",
+    "prCreated": "Pull Request created:",
+    "prFailed": "Failed to create Pull Request",
+    "noFixes": "No vulnerabilities found"
   },
   "vuln": {
     "severity": "Severity",
@@ -38,7 +49,9 @@
     "description": "Description",
     "fix": "Fix",
     "apply": "Apply Fix",
-    "reject": "Reject"
+    "reject": "Reject",
+    "applied": "Applied",
+    "rejected": "Rejected"
   },
   "common": {
     "loading": "Loading...",

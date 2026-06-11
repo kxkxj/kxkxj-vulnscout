@@ -35,6 +35,18 @@ export interface Patch {
   status: 'draft' | 'applied' | 'rejected';
 }
 
+export interface PRResult {
+  scan_id: string;
+  pr_url: string;
+  pr_number: number;
+  repo: string;
+}
+
+export interface FixGroup {
+  file_path: string;
+  vulns: Vulnerability[];
+}
+
 export interface ScanProgressMessage {
   type: 'progress' | 'vuln_found' | 'file_done' | 'scan_done';
   percent?: number;

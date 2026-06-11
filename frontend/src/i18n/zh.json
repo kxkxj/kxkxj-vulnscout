@@ -27,7 +27,18 @@
     "failed": "扫描失败",
     "progress": "正在扫描 {{file}} ({{percent}}%)",
     "finding": "在 {{file}} 中发现漏洞",
-    "results": "扫描结果"
+    "results": "扫描结果",
+    "fixSummary": "修复建议",
+    "totalFixes": "共 {{count}} 个漏洞，涉及 {{files}} 个文件",
+    "createPR": "创建 Pull Request",
+    "prDialogTitle": "创建 Pull Request",
+    "branchName": "分支名",
+    "baseBranch": "基础分支",
+    "confirmCreate": "创建",
+    "cancel": "取消",
+    "prCreated": "Pull Request 已创建：",
+    "prFailed": "创建 Pull Request 失败",
+    "noFixes": "未发现漏洞"
   },
   "vuln": {
     "severity": "严重程度",
@@ -38,7 +49,9 @@
     "description": "描述",
     "fix": "修复",
     "apply": "应用修复",
-    "reject": "拒绝"
+    "reject": "拒绝",
+    "applied": "已应用",
+    "rejected": "已拒绝"
   },
   "common": {
     "loading": "加载中...",
