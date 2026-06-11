@@ -12,3 +12,37 @@ export const fetchVulnerability = async (scanId: string, vulnId: string): Promis
 export const fetchPatches = async (scanId: string, vulnId: string): Promise<Patch[]> => { const { data } = await api.get(`/scans/${scanId}/results/${vulnId}/patches`); return data; };
 export const createScan = async (sourceType: string, sourcePath: string): Promise<Scan> => { const { data } = await api.post('/scans', null, { params: { source_type: sourceType, source_path: sourcePath } }); return data; };
 export const createScanFromZip = async (file: File): Promise<Scan> => { const fd = new FormData(); fd.append('file', file); const { data } = await api.post('/scans?source_type=local', fd); return data; };
+
+// ── GitHub Integration ──
+
+interface GitHubIssueResult {
+  vuln_id: string;
+  issue_number?: number;
+  url?: string;
+  error?: string;
+}
+
+interface CreateIssuesResponse {
+  scan_id: string;
+  repo: string;
+  results: GitHubIssueResult[];
+}
+
+export const createIssues = async (
+  scanId: string,
+  repo?: string,
+  severity?: string,
+): Promise<CreateIssuesResponse> => {
+  const { data } = await api.post(`/scans/${scanId}/issues`, { repo, severity });
+  return data;
+};
+
+export const createPR = async (
+  scanId: string,
+  repo?: string,
+  branch?: string,
+  base?: string,
+): Promise<{ scan_id: string; repo: string; pr_url: string; pr_number: number }> => {
+  const { data } = await api.post(`/scans/${scanId}/pr`, { repo, branch, base });
+  return data;
+};

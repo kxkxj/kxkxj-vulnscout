@@ -285,28 +285,43 @@ def model():
 def model_list():
     """List all available models with setup instructions."""
     mm = ModelManager()
+    available = mm.get_actually_available_models()
+
+    # Local / downloaded models
     table = Table(title="Local Models (Ollama)")
     table.add_column("Status", style="bold")
     table.add_column("Model", style="cyan")
     table.add_column("Size")
-    table.add_column("Setup", style="yellow")
-    for m in mm.list_available_models():
-        if m["provider"] == "ollama":
-            status = "downloaded" if mm.is_downloaded(m["name"]) else "available"
-            table.add_row(status, m["name"], f"{m['size_gb']}GB", f"vulnscout model download {m['name']}")
+    table.add_column("Description", style="white")
+    for m in available["local"]:
+        table.add_row("[green]downloaded[/]", m["name"], f"{m['size_gb']}GB" if m["size_gb"] else "?", m["description"])
+    for m in available["downloadable"]:
+        status = "[yellow]available[/]"
+        table.add_row(status, m["name"], f"{m['size_gb']}GB" if m["size_gb"] else "?", m["description"])
+    if not available["local"] and not available["downloadable"]:
+        table.add_row("[dim]—[/]", "[dim]No models found[/]", "", "")
     console.print(table)
-    table2 = Table(title="Cloud Models (require API key)")
-    table2.add_column("Model", style="cyan")
-    table2.add_column("Provider", style="green")
-    table2.add_column("Setup", style="yellow")
-    for m in mm.list_available_models():
-        if m["provider"] != "ollama":
-            table2.add_row(m["name"], m["provider"], f"vulnscout model use {m['name']}\n+ set OPENAI_API_KEY in .env")
-    console.print(table2)
+
+    # Cloud models
+    if available["cloud"]:
+        table2 = Table(title="Cloud Models (configured)")
+        table2.add_column("Model", style="cyan")
+        table2.add_column("Provider", style="green")
+        table2.add_column("Description", style="white")
+        for m in available["cloud"]:
+            table2.add_row(m["name"], m["provider"], m["description"])
+        console.print(table2)
+
     click.echo("")
     click.echo(f"Active model: {settings.model_name} ({settings.model_provider.value})")
     if settings.is_cloud:
         click.echo(f"  API: {settings.openai_base_url}")
+    if available["cloud_configured"]:
+        click.echo("  [green]Cloud API: connected[/]")
+    elif settings.openai_api_key:
+        click.echo("  [yellow]Cloud API key set but unreachable[/]")
+    else:
+        click.echo("  [dim]Cloud API: not configured[/]")
     click.echo("")
     click.echo("Quick switch:  vulnscout model use <model-name>")
 
@@ -348,11 +363,25 @@ def model_use(model_name):
     if not env_path.exists():
         click.echo("No .env file found. Run `vulnscout config init` first.", err=True)
         sys.exit(1)
+
+    # Dynamically determine provider
+    mm = ModelManager()
+    available = mm.get_actually_available_models()
+
+    is_ollama_model = any(
+        m["name"] == model_name for m in available["local"] + available["downloadable"]
+    )
+    is_cloud_model = any(m["name"] == model_name for m in available["cloud"])
+
+    if is_ollama_model:
+        provider = "ollama"
+    elif is_cloud_model:
+        provider = "openai"
+    else:
+        provider = "custom"
+
     content = env_path.read_text()
     lines = content.split("\n")
-    known_ollama = {"deepseek-coder:1.3b", "deepseek-coder:6.7b", "codellama", "llama3", "mistral", "qwen2"}
-    known_openai = {"gpt-4o", "gpt-4o-mini", "gpt-4-turbo", "gpt-3.5-turbo"}
-    provider = "ollama" if model_name in known_ollama else ("openai" if model_name in known_openai else "custom")
     found_name = found_prov = False
     for i, line in enumerate(lines):
         if line.startswith("MODEL_NAME="):

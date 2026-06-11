@@ -1,1 +1,73 @@
-{ "app": { "title": "VulnScout", "subtitle": "AI 代码漏洞扫描器", "language": "语言" }, "nav": { "dashboard": "仪表盘", "newScan": "新建扫描" }, "dashboard": { "title": "仪表盘", "recentScans": "最近的扫描", "totalScans": "总扫描数", "totalVulnerabilities": "总漏洞数", "noScans": "还没有扫描记录。" }, "scan": { "new": "新建扫描", "localPath": "本地目录路径", "githubUrl": "GitHub 仓库 URL", "uploadZip": "上传 ZIP 文件", "start": "开始扫描", "running": "扫描中...", "done": "扫描完成", "results": "扫描结果" }, "vuln": { "severity": "严重程度", "file": "文件", "line": "行号", "cwe": "CWE 编号", "title": "标题", "description": "描述", "fix": "修复", "apply": "应用修复" }, "common": { "loading": "加载中...", "error": "错误", "back": "返回", "export": "导出报告" }, "severity": { "critical": "严重", "high": "高危", "medium": "中危", "low": "低危" } }
+{
+  "app": {
+    "title": "VulnScout",
+    "subtitle": "AI 代码漏洞扫描器",
+    "language": "语言"
+  },
+  "nav": {
+    "dashboard": "仪表盘",
+    "newScan": "新建扫描"
+  },
+  "dashboard": {
+    "title": "仪表盘",
+    "recentScans": "最近的扫描",
+    "totalScans": "总扫描数",
+    "totalVulnerabilities": "总漏洞数",
+    "noScans": "还没有扫描记录。"
+  },
+  "scan": {
+    "new": "新建扫描",
+    "localPath": "本地目录路径",
+    "githubUrl": "GitHub 仓库 URL",
+    "uploadZip": "上传 ZIP 文件",
+    "start": "开始扫描",
+    "running": "扫描中...",
+    "done": "扫描完成",
+    "results": "扫描结果"
+  },
+  "vuln": {
+    "severity": "严重程度",
+    "file": "文件",
+    "line": "行号",
+    "cwe": "CWE 编号",
+    "title": "标题",
+    "description": "描述",
+    "fix": "修复",
+    "apply": "应用修复"
+  },
+  "github": {
+    "title": "GitHub 集成",
+    "createIssues": "创建 Issue",
+    "createPR": "创建 Pull Request",
+    "repo": "仓库",
+    "repoHint": "从扫描源自动检测，可按需修改",
+    "severity": "最低严重程度",
+    "severityHint": "只为此级别及以上的漏洞创建 Issue",
+    "branch": "分支名称",
+    "base": "基础分支",
+    "createIssue": "创建 GitHub Issue",
+    "creating": "创建中...",
+    "results": "GitHub 结果",
+    "issueCreated": "Issue #{{number}} 已创建",
+    "prCreated": "Pull Request #{{number}} 已创建",
+    "noPatches": "没有修复补丁。请使用 --auto-fix 参数重新扫描以生成补丁。",
+    "noToken": "未配置 GitHub Token。请在 .env 中设置 GITHUB_TOKEN",
+    "success": "成功创建 {{count}} 个 Issue，{{failed}} 个失败。",
+    "prSuccess": "Pull Request 创建成功。",
+    "error": "GitHub 操作失败：{{msg}}",
+    "configRequired": "需要 GitHub Token",
+    "configHint": "在 .env 文件中设置 GITHUB_TOKEN 以启用 GitHub 集成功能。"
+  },
+  "common": {
+    "loading": "加载中...",
+    "error": "错误",
+    "back": "返回",
+    "export": "导出报告"
+  },
+  "severity": {
+    "critical": "严重",
+    "high": "高危",
+    "medium": "中危",
+    "low": "低危"
+  }
+}

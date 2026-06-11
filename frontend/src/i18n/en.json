@@ -1,1 +1,73 @@
-{ "app": { "title": "VulnScout", "subtitle": "AI-Powered Code Vulnerability Scanner", "language": "Language" }, "nav": { "dashboard": "Dashboard", "newScan": "New Scan" }, "dashboard": { "title": "Dashboard", "recentScans": "Recent Scans", "totalScans": "Total Scans", "totalVulnerabilities": "Total Vulnerabilities", "noScans": "No scans yet." }, "scan": { "new": "New Scan", "localPath": "Local Directory Path", "githubUrl": "GitHub Repository URL", "uploadZip": "Upload ZIP File", "start": "Start Scan", "running": "Scanning...", "done": "Scan Complete", "results": "Scan Results" }, "vuln": { "severity": "Severity", "file": "File", "line": "Line", "cwe": "CWE ID", "title": "Title", "description": "Description", "fix": "Fix", "apply": "Apply Fix" }, "common": { "loading": "Loading...", "error": "Error", "back": "Back", "export": "Export Report" }, "severity": { "critical": "Critical", "high": "High", "medium": "Medium", "low": "Low" } }
+{
+  "app": {
+    "title": "VulnScout",
+    "subtitle": "AI-Powered Code Vulnerability Scanner",
+    "language": "Language"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "newScan": "New Scan"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "recentScans": "Recent Scans",
+    "totalScans": "Total Scans",
+    "totalVulnerabilities": "Total Vulnerabilities",
+    "noScans": "No scans yet."
+  },
+  "scan": {
+    "new": "New Scan",
+    "localPath": "Local Directory Path",
+    "githubUrl": "GitHub Repository URL",
+    "uploadZip": "Upload ZIP File",
+    "start": "Start Scan",
+    "running": "Scanning...",
+    "done": "Scan Complete",
+    "results": "Scan Results"
+  },
+  "vuln": {
+    "severity": "Severity",
+    "file": "File",
+    "line": "Line",
+    "cwe": "CWE ID",
+    "title": "Title",
+    "description": "Description",
+    "fix": "Fix",
+    "apply": "Apply Fix"
+  },
+  "github": {
+    "title": "GitHub Integration",
+    "createIssues": "Create Issues",
+    "createPR": "Create Pull Request",
+    "repo": "Repository",
+    "repoHint": "Auto-detected from scan source. Change if needed.",
+    "severity": "Min Severity",
+    "severityHint": "Only create issues for vulnerabilities at or above this level",
+    "branch": "Branch Name",
+    "base": "Base Branch",
+    "createIssue": "Create GitHub Issue",
+    "creating": "Creating...",
+    "results": "GitHub Results",
+    "issueCreated": "Issue #{{number}} created",
+    "prCreated": "Pull Request #{{number}} created",
+    "noPatches": "No fix patches available. Run scan with --auto-fix to generate patches.",
+    "noToken": "GitHub token not configured. Set GITHUB_TOKEN in .env",
+    "success": "Successfully created {{count}} issue(s) and {{failed}} failed.",
+    "prSuccess": "Pull request created successfully.",
+    "error": "GitHub operation failed: {{msg}}",
+    "configRequired": "GitHub Token Required",
+    "configHint": "Set GITHUB_TOKEN in your .env file to enable GitHub integration."
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "back": "Back",
+    "export": "Export Report"
+  },
+  "severity": {
+    "critical": "Critical",
+    "high": "High",
+    "medium": "Medium",
+    "low": "Low"
+  }
+}

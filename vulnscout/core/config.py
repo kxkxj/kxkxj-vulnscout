@@ -30,6 +30,13 @@ class Settings(BaseSettings):
 
     model_config = ConfigDict(env_file=".env", env_file_encoding="utf-8")
 
+    def reload(self) -> Settings:
+        """Hot-reload settings from .env file without restarting the server."""
+        new = Settings(_env_file=".env", _env_file_encoding="utf-8")
+        for field in self.model_fields:
+            setattr(self, field, getattr(new, field))
+        return self
+
     @property
     def is_ollama(self) -> bool:
         return self.model_provider == ModelProvider.OLLAMA

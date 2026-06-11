@@ -31,12 +31,39 @@ class CodeFetcher:
 
     def fetch_github(self, repo_url: str, depth: int = 1) -> Path:
         import git
-        repo_name = repo_url.rstrip("/").split("/")[-1].replace(".git", "")
-        dest = self.work_dir / repo_name
+        import re
+
+        # Normalize GitHub URL to a cloneable format.
+        # Supports:
+        #   https://github.com/owner/repo
+        #   https://github.com/owner/repo.git
+        #   https://github.com/owner/repo/tree/branch
+        #   https://github.com/owner/repo/tree/branch/path
+        #   https://github.com/owner/repo/blob/branch/file
+        #   git@github.com:owner/repo.git
+
+        url = repo_url.rstrip("/")
+
+        # Extract owner and repo name only (ignore /tree/... /blob/... paths)
+        match = re.match(
+            r"(?:https://github\.com/|git@github\.com:)([^/]+)/([^/#?]+)(?:\.git)?",
+            url,
+        )
+        if not match:
+            raise CodeFetchError(
+                f"Invalid GitHub URL: {repo_url}. "
+                "Expected format: https://github.com/owner/repo"
+            )
+
+        owner = match.group(1)
+        repo = match.group(2).replace(".git", "")
+
+        clone_url = f"https://github.com/{owner}/{repo}.git"
+        dest = self.work_dir / repo
         if dest.exists():
             shutil.rmtree(dest)
         try:
-            git.Repo.clone_from(repo_url, str(dest), depth=depth)
+            git.Repo.clone_from(clone_url, str(dest), depth=depth)
         except git.GitCommandError as e:
             raise CodeFetchError(f"Git clone failed: {e}")
         return dest
