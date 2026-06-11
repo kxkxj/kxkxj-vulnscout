@@ -6,11 +6,8 @@ services:
     environment:
       - DATABASE_URL=sqlite:///data/vulnscout.db
       - MODEL_CACHE_DIR=/models
-      - MODEL_PROVIDER=${MODEL_PROVIDER:-ollama}
-      - MODEL_NAME=${MODEL_NAME:-deepseek-coder:1.3b}
       - OLLAMA_API_URL=http://ollama:11434
-      - OPENAI_BASE_URL=${OPENAI_BASE_URL:-http://ollama:11434/v1}
-      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - OPENAI_BASE_URL=http://ollama:11434/v1
       - GITHUB_TOKEN=${GITHUB_TOKEN:-}
     volumes:
       - ./data:/app/data
@@ -31,6 +28,8 @@ services:
 
   ollama:
     image: ollama/ollama:latest
+    # No host port mapping (avoids conflict with local Ollama on :11434)
+    # Containers access it via internal DNS: http://ollama:11434
     volumes:
       - ollama_data:/root/.ollama
 

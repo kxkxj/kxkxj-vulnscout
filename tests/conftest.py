@@ -1,7 +1,9 @@
 import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+
 from vulnscout.models.db import Base
+
 
 @pytest.fixture
 def db_session():

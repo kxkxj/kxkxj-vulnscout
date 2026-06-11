@@ -6,14 +6,15 @@
   },
   "nav": {
     "dashboard": "Dashboard",
-    "newScan": "New Scan"
+    "newScan": "New Scan",
+    "docs": "Documentation"
   },
   "dashboard": {
     "title": "Dashboard",
     "recentScans": "Recent Scans",
     "totalScans": "Total Scans",
     "totalVulnerabilities": "Total Vulnerabilities",
-    "noScans": "No scans yet."
+    "noScans": "No scans yet. Start by creating a new scan."
   },
   "scan": {
     "new": "New Scan",
@@ -23,6 +24,9 @@
     "start": "Start Scan",
     "running": "Scanning...",
     "done": "Scan Complete",
+    "failed": "Scan Failed",
+    "progress": "Scanning {{file}} ({{percent}}%)",
+    "finding": "Found vulnerabilities in {{file}}",
     "results": "Scan Results"
   },
   "vuln": {
@@ -33,40 +37,19 @@
     "title": "Title",
     "description": "Description",
     "fix": "Fix",
-    "apply": "Apply Fix"
-  },
-  "github": {
-    "title": "GitHub Integration",
-    "createIssues": "Create Issues",
-    "createPR": "Create Pull Request",
-    "repo": "Repository",
-    "repoHint": "Auto-detected from scan source. Change if needed.",
-    "severity": "Min Severity",
-    "severityHint": "Only create issues for vulnerabilities at or above this level",
-    "branch": "Branch Name",
-    "base": "Base Branch",
-    "createIssue": "Create GitHub Issue",
-    "creating": "Creating...",
-    "results": "GitHub Results",
-    "issueCreated": "Issue #{{number}} created",
-    "prCreated": "Pull Request #{{number}} created",
-    "noPatches": "No fix patches available. Run scan with --auto-fix to generate patches.",
-    "noToken": "GitHub token not configured. Set GITHUB_TOKEN in .env",
-    "success": "Successfully created {{count}} issue(s) and {{failed}} failed.",
-    "prSuccess": "Pull request created successfully.",
-    "error": "GitHub operation failed: {{msg}}",
-    "configRequired": "GitHub Token Required",
-    "configHint": "Set GITHUB_TOKEN in your .env file to enable GitHub integration.",
-    "generatePatches": "Generate Fix Patches",
-    "generatingPatches": "Generating...",
-    "patchesGenerated": "Generated {{count}} patches ({{errors}} failed)",
-    "patchesRequired": "Patches are required before creating a PR. Click 'Generate Fix Patches' first."
+    "apply": "Apply Fix",
+    "reject": "Reject"
   },
   "common": {
     "loading": "Loading...",
     "error": "Error",
+    "empty": "No data",
+    "close": "Close",
     "back": "Back",
-    "export": "Export Report"
+    "export": "Export Report",
+    "json": "JSON",
+    "sarif": "SARIF",
+    "markdown": "Markdown"
   },
   "severity": {
     "critical": "Critical",

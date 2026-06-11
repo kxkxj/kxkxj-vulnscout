@@ -3,6 +3,7 @@ from __future__ import annotations
 import shutil
 import subprocess
 from dataclasses import dataclass, field
+from pathlib import Path
 
 
 @dataclass
@@ -18,32 +19,44 @@ class HardwareInfo:
 
     @property
     def recommended_model(self) -> str:
-        from vulnscout.core.model_manager import KNOWN_OLLAMA_MODELS
+        """Auto-select Ollama model tag based on available VRAM."""
         if not self.has_gpu:
-            return KNOWN_OLLAMA_MODELS[0]["name"] if KNOWN_OLLAMA_MODELS else "deepseek-coder:1.3b"
+            return "deepseek-coder:1.3b"
         vram = self.total_vram_mb
-        # Pick the largest model that fits in VRAM (rough: model needs ~4x its size in VRAM)
-        best = KNOWN_OLLAMA_MODELS[0]
-        for m in KNOWN_OLLAMA_MODELS:
-            if m["size_gb"] > 0 and m["size_gb"] * 4 * 1024 <= vram:
-                best = m
-        return best["name"]
+        if vram >= 24000:
+            return "deepseek-coder:6.7b"
+        elif vram >= 8000:
+            return "deepseek-coder:1.3b"
+        else:
+            return "deepseek-coder:1.3b"
 
     @property
     def recommended_backend(self) -> str:
         if self.has_ollama:
             return "ollama"
+        elif self.has_vllm and self.has_gpu:
+            return "vllm"
+        elif self.has_llama_cpp:
+            return "llama.cpp"
         return "ollama"
 
 
 def detect_hardware() -> HardwareInfo:
     info = HardwareInfo()
+
+    # ── GPU detection ──────────────────────────────────────────────
     nvidia_smi = shutil.which("nvidia-smi")
     if nvidia_smi:
         try:
             result = subprocess.run(
-                [nvidia_smi, "--query-gpu=name,memory.total", "--format=csv,noheader,nounits"],
-                capture_output=True, text=True, timeout=10,
+                [
+                    nvidia_smi,
+                    "--query-gpu=name,memory.total",
+                    "--format=csv,noheader,nounits",
+                ],
+                capture_output=True,
+                text=True,
+                timeout=10,
             )
             if result.returncode == 0 and result.stdout.strip():
                 lines = result.stdout.strip().split("\n")
@@ -51,21 +64,37 @@ def detect_hardware() -> HardwareInfo:
                 for line in lines:
                     parts = [p.strip() for p in line.split(",")]
                     if len(parts) == 2:
-                        info.gpu_name = parts[0]
-                        info.total_vram_mb += int(parts[1])
+                        name, vram = parts
+                        info.gpu_name = name
+                        info.total_vram_mb += int(vram)
                 info.has_gpu = info.gpu_count > 0
-        except Exception:
+        except (subprocess.TimeoutExpired, FileNotFoundError, ValueError):
             pass
+
+    # ── Ollama detection ───────────────────────────────────────────
     info.has_ollama = shutil.which("ollama") is not None
+
+    # ── Other backend detection ────────────────────────────────────
     if shutil.which("llama-cpp-server") or _import_check("llama_cpp"):
         info.has_llama_cpp = True
     if _import_check("vllm"):
         info.has_vllm = True
+
+    # ── Warnings ───────────────────────────────────────────────────
     if not info.has_gpu:
-        info.warnings.append("No NVIDIA GPU detected. Using CPU mode (Ollama).")
+        info.warnings.append(
+            "No NVIDIA GPU detected. Using CPU mode (Ollama). "
+            "Expect slower analysis. For best performance, use a GPU with 8GB+ VRAM."
+        )
     if not info.has_ollama:
-        info.warnings.append("Ollama not found. Install: curl -fsSL https://ollama.com/install.sh | sh")
+        info.warnings.append(
+            "Ollama not found. Install it first:\n"
+            "  curl -fsSL https://ollama.com/install.sh | sh\n"
+            "Then pull a model: ollama pull deepseek-coder:1.3b"
+        )
+
     return info
+
 
 def _import_check(module_name: str) -> bool:
     try:
